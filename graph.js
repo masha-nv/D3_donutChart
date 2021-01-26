@@ -65,12 +65,23 @@ const update = (data) => {
     .duration(750)
     .attrTween("d", arcTweenEnter);
 
+  //ADD EVENTS
+  graph
+    .selectAll("path")
+    .on("mouseover", function () {
+      handleMouseOver(this);
+    })
+    .on("mouseout", function () {
+      handleMouseOut(this);
+    })
+    .on("click", handleClick);
+
   //update and call legend
   legendGroup.call(legend).selectAll("text").attr("fill", "#fff");
 };
 
 // data array and firestore
-const expenses = [];
+let expenses = [];
 db.collection("expenses").onSnapshot((data) => {
   data.docChanges().forEach((change) => {
     const doc = { ...change.doc.data(), id: change.doc.id };
@@ -119,3 +130,23 @@ function arcTweenCurrent(d) {
     return arcPath(interpolator(t));
   };
 }
+
+// event handlers
+function handleMouseOver(item) {
+  d3.select(item)
+    .transition("changeSliceFill")
+    .duration(300)
+    .attr("fill", "#fff");
+}
+
+function handleMouseOut(item) {
+  d3.select(item)
+    .transition("changeSliceFill")
+    .duration(300)
+    .attr("fill", (d) => colours(d.data.name));
+}
+
+const handleClick = (d) => {
+  const item = d.target.__data__.data.id;
+  db.collection("expenses").doc(item).delete();
+};
