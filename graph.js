@@ -21,6 +21,20 @@ const arcPath = d3
   .innerRadius(pieDims.radius / 2)
   .outerRadius(pieDims.radius);
 
+// TOOL TIP USING D3-TIP PLUGIN
+const tip = d3
+  .tip()
+  .attr("class", "d3-tip")
+  .html(function (d) {
+    const cost = d.target.__data__.data.cost;
+    const name = d.target.__data__.data.name;
+    return `<p>${name.toUpperCase()} - <span class="cost">$${cost}</span> </p>
+    <p>Click to delete</p>
+    `;
+  });
+
+graph.call(tip);
+
 // SCALE
 const colours = d3.scaleOrdinal(d3.schemeDark2);
 
@@ -68,11 +82,13 @@ const update = (data) => {
   //ADD EVENTS
   graph
     .selectAll("path")
-    .on("mouseover", function () {
+    .on("mouseover", function (e) {
       handleMouseOver(this);
+      tip.show(e);
     })
     .on("mouseout", function () {
       handleMouseOut(this);
+      tip.hide();
     })
     .on("click", handleClick);
 
