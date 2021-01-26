@@ -31,9 +31,13 @@ const update = (data) => {
   //update color scale domain
   colours.domain(data.map((d) => d.name));
 
-  paths.exit().transition().attrTween("d", arcTweenExit).remove();
+  paths.exit().transition(750).attrTween("d", arcTweenExit).remove();
 
-  paths.attr("d", arcPath);
+  paths
+    .attr("d", arcPath)
+    .transition()
+    .duration(750)
+    .attrTween("d", arcTweenCurrent);
 
   paths
     .enter()
@@ -42,6 +46,9 @@ const update = (data) => {
     .attr("stroke", "#fff")
     .attr("stroke-width", 3)
     .attr("fill", (d) => colours(d.data.name))
+    .each(function (d) {
+      this._current = d;
+    })
     .transition()
     .duration(750)
     .attrTween("d", arcTweenEnter);
@@ -76,7 +83,6 @@ db.collection("expenses").onSnapshot((data) => {
 
 const arcTweenEnter = (d) => {
   let interpolator = d3.interpolate(d.endAngle, d.startAngle);
-
   return function (t) {
     d.startAngle = interpolator(t);
     return arcPath(d);
@@ -86,7 +92,15 @@ const arcTweenEnter = (d) => {
 const arcTweenExit = (d) => {
   const interpolator = d3.interpolate(d.startAngle, d.endAngle);
   return function (t) {
-    d.endAngle = interpolator(t);
+    d.startAngle = interpolator(t);
     return arcPath(d);
   };
 };
+
+function arcTweenCurrent(d) {
+  const interpolator = d3.interpolate(this._current, d);
+  this._current = d;
+  return function (t) {
+    return arcPath(interpolator(t));
+  };
+}
