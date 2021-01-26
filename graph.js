@@ -24,6 +24,18 @@ const arcPath = d3
 // SCALE
 const colours = d3.scaleOrdinal(d3.schemeDark2);
 
+//LEGEND SETUP
+const legendGroup = svg
+  .append("g")
+  .attr("transform", `translate(${pieDims.width + 40}, 10)`);
+
+const legend = d3
+  .legendColor()
+  .shape("circle")
+  .shapeRadius(5)
+  .shapePadding(10)
+  .scale(colours);
+
 //update function
 const update = (data) => {
   const paths = graph.selectAll("path").data(pie(data));
@@ -52,6 +64,9 @@ const update = (data) => {
     .transition()
     .duration(750)
     .attrTween("d", arcTweenEnter);
+
+  //update and call legend
+  legendGroup.call(legend).selectAll("text").attr("fill", "#fff");
 };
 
 // data array and firestore
